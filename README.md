@@ -6,7 +6,7 @@ This Python code defines a class called `ImageProcessor` that is used to process
 
     1. Install suite2p following instructions here: https://github.com/MouseLand/suite2p
     2. Clone or download current repo
-   # Usage
+   ### Usage
     3. Open anaconda prompt
     4. Navigate to the directory where this repo exists by typing "cd: path-to-the-repo", or add it to your path after opening jupyter notebook
     5. Activate the suite2p environment by typing "activate suite2p"
