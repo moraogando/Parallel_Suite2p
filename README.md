@@ -7,6 +7,8 @@ Citation:
 
 doi: https://doi.org/10.1101/2023.03.02.530875
 
+The core [repo] exists at: (https://github.com/hs13/Meso_HScode), by the great Hyeyoung Shin
+
 # ImageProcessor Documentation
 This Python code defines a class called `ImageProcessor` that is used to process and analyze TIFF images. The class is designed to handle mesoscopic data and multiplane images. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing, and reconstruct images.
 ## Installation
@@ -20,7 +22,7 @@ This Python code defines a class called `ImageProcessor` that is used to process
     6. Type "jupyter notebook" to lunch the jupyter server in your web-browser
     7. Go to the example notebook and run the cells
     8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on this 
-    [repo](https://github.com/hs13/Meso_HScode)
+    
     
 
 ## Dependencies
