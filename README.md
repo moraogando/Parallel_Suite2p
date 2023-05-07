@@ -12,7 +12,7 @@ This Python code defines a class called `ImageProcessor` that is used to process
     5. Activate the suite2p environment by typing "activate suite2p"
     6. Type "jupyter notebook" to lunch the jupyter server in your web-browser
     7. Go to the example notebook and run the cells
-    8. After analyzing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on this repo: (TODO ADD REPO)
+    8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on this repo: (TODO ADD REPO)
     
 
 ## Dependencies
