@@ -1,10 +1,16 @@
 # Parallel_Suite2p
 """
+This code is part of a tool-kit generated in the Adesnik lab to probe inte-areal computations combining two-photon holography and meso-scale imaging
+
+Citation:
+[Probing inter-areal computations with a cellular resolution two-photon holographic mesoscope](https://www.biorxiv.org/content/10.1101/2023.03.02.530875v2)
+doi: https://doi.org/10.1101/2023.03.02.530875
+
 # ImageProcessor Documentation
 This Python code defines a class called `ImageProcessor` that is used to process and analyze TIFF images. The class is designed to handle mesoscopic data and multiplane images. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing, and reconstruct images.
 ## Installation
 
-    1. Install suite2p following instructions here: https://github.com/MouseLand/suite2p
+    1. Install [suite2p] following instructions here: (https://github.com/MouseLand/suite2p)
     2. Clone or download current repo
    ### Usage
     3. Open anaconda prompt
@@ -12,7 +18,8 @@ This Python code defines a class called `ImageProcessor` that is used to process
     5. Activate the suite2p environment by typing "activate suite2p"
     6. Type "jupyter notebook" to lunch the jupyter server in your web-browser
     7. Go to the example notebook and run the cells
-    8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on this repo: (TODO ADD REPO)
+    8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on this 
+    [repo](https://github.com/hs13/Meso_HScode)
     
 
 ## Dependencies
