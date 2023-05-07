@@ -4,13 +4,14 @@ This code is part of a tool-kit generated in the Adesnik lab to probe inte-areal
 
 Citation:
 [Probing inter-areal computations with a cellular resolution two-photon holographic mesoscope](https://www.biorxiv.org/content/10.1101/2023.03.02.530875v2)
+
 doi: https://doi.org/10.1101/2023.03.02.530875
 
 # ImageProcessor Documentation
 This Python code defines a class called `ImageProcessor` that is used to process and analyze TIFF images. The class is designed to handle mesoscopic data and multiplane images. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing, and reconstruct images.
 ## Installation
 
-    1. Install [suite2p] following instructions here: (https://github.com/MouseLand/suite2p)
+    1. Install [suite2p](https://github.com/MouseLand/suite2p) following their instructions 
     2. Clone or download current repo
    ### Usage
     3. Open anaconda prompt
