@@ -2,11 +2,21 @@
 """
 # ImageProcessor Documentation
 This Python code defines a class called `ImageProcessor` that is used to process and analyze TIFF images. The class is designed to handle mesoscopic data and multiplane images. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing, and reconstruct images.
+## Installation
+
+    1. Install suite2p following instructions here: https://github.com/MouseLand/suite2p
+    2. Clone or download current repo
+    # Usage
+    3. Open anaconda prompt
+    4. Navigate to the directory where this repo exists by typing "cd: path-to-the-repo", or add it to your path after opening jupyter notebook
+    5. Activate the suite2p environment by typing "activate suite2p"
+    6. Type "jupyter notebook" to lunch the jupyter server in your web-browser
+    7. Go to the example notebook and run the cells
 
 ## Dependencies
 
+This code should be run from within the suite2p environment.
 The following libraries are required (All of which are contained in the suite2p package):
-
 - os
 - gc
 - time
