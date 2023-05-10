@@ -11,7 +11,7 @@ The core repo for full mesoscale closed loop experiments exists at: (https://git
 
 ImageProcessor Documentation
 This Python code defines a class called `ImageProcessor` that is used to process and analyze ScanImage TIFF images using the 
-[suite2p] (https://github.com/MouseLand/suite2p) library. The class is designed to handle both mesoscopic multiplane configurations. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing.
+[suite2p](https://github.com/MouseLand/suite2p) library. The class is designed to handle both mesoscopic multiplane configurations. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing.
 ## Installation
 
     1. Install suite2p following their instructions (https://github.com/MouseLand/suite2p).
