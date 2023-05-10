@@ -9,24 +9,28 @@ from suite2p import run_s2p
 from ScanImageTiffReader import ScanImageTiffReader
 import multiprocessing
 import matplotlib.pyplot as plt
+import ast
 
 class ImageProcessor:
-    def __init__(self, tiff_folder_list=[], exp_list=[], x_bounds=[0,512], y_bounds=[0,512], out_path='out_path', channels=1, channelOI=0,singleChannel=1):
-        if len(exp_list)==0:
+    def __init__(self, tiff_folder_list=[], exp_list=[], x_bounds=[0,512], y_bounds=[0,512],
+                 out_path='out_path', channels=1, channelOI=[0],cropToHoloFOV=0):
+
+        if len(tiff_folder_list)==0:
             print('Need at least one tif folder to analyze')
             return
         self.tiff_folder_list = tiff_folder_list
-        if len(exp_list)==0:
-            exp_list = [t.split('//')[-1] for t in tiff_folder_list]
-
+        if not exp_list:
+            exp_list = [t.split('\\')[-1].replace('//','').replace( r'/' ,'').replace(r'\\','') for t in tiff_folder_list]
+            print(f'assigning .h5 names: {exp_list}')
         self.exp_list = exp_list
         self.x_bounds = x_bounds
         self.y_bounds = y_bounds
         self.out_path = out_path
         self.channels = channels
         self.channelOI = channelOI
-        self.singleChannel = singleChannel
         self.outdirs=[]
+        self.cropToHoloFOV = cropToHoloFOV
+
     # Helper
     def create_directory(self,path):
         if not os.path.exists(path):
@@ -79,54 +83,57 @@ class ImageProcessor:
         else:
             num_planes=1
         roi_metadata = metadata['json']['RoiGroups']['imagingRoiGroup']['rois']
+        zs = ast.literal_eval(metadata['hStackManager']['zs'].replace(" ",","))
         # Extract ROI dimensions and information for each z-plane
-        num_rois = len(roi_metadata)
         roi = {}
         w_px = []
         h_px = []
         cXY = []
         szXY = []
-        for r in range(num_rois):
-            roi[r] = {}
-            roi[r]['w_px'] = roi_metadata[r]['scanfields']['pixelResolutionXY'][0]
-            w_px.append(roi[r]['w_px'])
-            roi[r]['h_px'] = roi_metadata[r]['scanfields']['pixelResolutionXY'][1]
-            h_px.append(roi[r]['h_px'])
-            roi[r]['center'] = roi_metadata[r]['scanfields']['centerXY']
-            cXY.append(roi[r]['center'])
-            roi[r]['size'] = roi_metadata[r]['scanfields']['sizeXY']
-            szXY.append(roi[r]['size'])
-            #print('{} {} {}'.format(roi[r]['w_px'], roi[r]['h_px'], roi[r]['size']))
+        if (type(roi_metadata) == list):
+            num_rois = len(roi_metadata)
+            for r in range(num_rois):
+                    roi[r] = {}
+                    roi[r]['w_px'] = roi_metadata[r]['scanfields']['pixelResolutionXY'][0]
+                    w_px.append(roi[r]['w_px'])
+                    roi[r]['h_px'] = roi_metadata[r]['scanfields']['pixelResolutionXY'][1]
+                    h_px.append(roi[r]['h_px'])
+                    roi[r]['center'] = roi_metadata[r]['scanfields']['centerXY']
+                    cXY.append(roi[r]['center'])
+                    roi[r]['size'] = roi_metadata[r]['scanfields']['sizeXY']
+                    szXY.append(roi[r]['size'])
+                    #print('{} {} {}'.format(roi[r]['w_px'], roi[r]['h_px'], roi[r]['size']))
+            w_px = np.asarray(w_px)
+            h_px = np.asarray(h_px)
+            szXY = np.asarray(szXY)
+            cXY = np.asarray(cXY)
+            cXY = cXY - szXY / 2
+            cXY = cXY - np.amin(cXY, axis=0)
+            mu = np.median(np.transpose(np.asarray([w_px, h_px])) / szXY, axis=0)
+            imin = cXY * mu
 
-        w_px = np.asarray(w_px)
-        h_px = np.asarray(h_px)
-        print(f' found dimentions of: w_px {w_px} , h_px {h_px}')
-        szXY = np.asarray(szXY)
-        cXY = np.asarray(cXY)
-        cXY = cXY - szXY / 2
-        cXY = cXY - np.amin(cXY, axis=0)
-        mu = np.median(np.transpose(np.asarray([w_px, h_px])) / szXY, axis=0)
-        imin = cXY * mu
+            #deduce flyback time
+            n_rows_sum = np.sum(h_px)
+            n_flyback = (image_file.shape()[1] - n_rows_sum) / np.max([1, num_rois - 1])
 
-        #deduce flyback time
-        n_rows_sum = np.sum(h_px)
-        n_flyback = (image_file.shape()[1] - n_rows_sum) / np.max([1, num_rois - 1])
+            irow = np.insert(np.cumsum(np.transpose(h_px) + n_flyback), 0, 0)
+            irow = np.delete(irow, -1)
+            irow = np.vstack((irow, irow + np.transpose(h_px)))
 
-        irow = np.insert(np.cumsum(np.transpose(h_px) + n_flyback), 0, 0)
-        irow = np.delete(irow, -1)
-        irow = np.vstack((irow, irow + np.transpose(h_px)))
+        elif (type(roi_metadata)==dict):
+            num_rois = len(np.unique(zs ))
 
         data = {}
         data['fs'] = frame_rate
-        data['nplanes'] = len(metadata['hStackManager']['zs'])# To do: check that this is a general property for finding if a recording configuration is multiplane or not
+        data['nplanes'] =len(np.unique(zs ))# To do: check that this is a general property for finding if a recording configuration is multiplane or not
         data['nrois'] = num_rois #or irow.shape[1]?
         if data['nrois'] == 1:
             data['mesoscan'] = 0
             data['multiplane'] = 0
-        elif len(metadata['hStackManager']['zs'])==1 and num_rois>1:
+        elif data['nplanes']==1 and data['nrois']>1:
             data['mesoscan'] = 1
             data['multiplane'] = 0
-        elif len(metadata['hStackManager']['zs'])>1 and num_rois>1:
+        elif data['nplanes']>1 and data['nrois']>1:
             data['mesoscan'] = 0
             data['multiplane'] = 1
 
@@ -147,7 +154,7 @@ class ImageProcessor:
         self.image = image
         self.planes = data['nplanes']
         print(f'found {self.planes} planes and {num_rois} independent ROIs')
-        return data
+        return metadata
 
     # Optional 0
     def plotReconstruction(self):
@@ -165,8 +172,24 @@ class ImageProcessor:
 
         meanrois = [np.mean(i,0) for i in rois]
         print('Concatenating ROIs to verify image reconstruction: ')
-        plt.imshow(np.hstack(meanrois),vmax=10)
-        W,H = np.sum(self.meso_params['w_px']),self.meso_params['h_px'][0]
+        reconstruction = np.hstack(meanrois)
+
+        mimg1 = np.percentile(reconstruction,0.01)
+        mimg99 = np.percentile(reconstruction,99.9)
+        mscaled = (reconstruction - mimg1) / (mimg99 - mimg1)
+        mimg = mscaled*255
+        mimg = mimg.astype(np.uint32)
+
+        plt.imshow(mimg,vmin=0,vmax=255)
+        plt.colorbar()
+
+        if self.cropToHoloFOV:
+            plt.vlines(self.y_bounds[1],self.x_bounds[0],self.x_bounds[1],color='white')
+            plt.vlines(self.y_bounds[0],self.x_bounds[0],self.x_bounds[1],color='white')
+            plt.hlines(self.x_bounds[1],self.y_bounds[0],self.y_bounds[1],color='white')
+            plt.hlines(self.x_bounds[0],self.y_bounds[0],self.y_bounds[1],color='white')
+
+        H,W =reconstruction.shape
         plt.xlabel(f'FOV width {W} pix')
         plt.ylabel(f'FOV height {H} pix')
         plt.title('Reconstructed Image')
@@ -180,12 +203,19 @@ class ImageProcessor:
         self.y_slice = slice(self.y_bounds[0], self.y_bounds[1])
         for exp_name, tiff_folder in zip(self.exp_list, self.tiff_folder_list):
             pth = Path(tiff_folder)
-            self.movs = list(pth.glob('*.tif'))
-            print(f'found tif folder with {len(self.movs)} total tifs')
-            if self.meso_params['mesoscan']:
-                self.crop_and_save_h5_meso(exp_name,tiff_folder)
-            else:
-                self.crop_and_save_h5(exp_name,tiff_folder)
+            allMovs = list(pth.glob('*.tif'))
+            print(f'found tif folder with {len(allMovs)} total tifs')
+            for idx, mov in enumerate(allMovs):
+                self.movs = [mov]
+                self.movIndex = idx
+                #print(f'found tif folder with {len(self.movs)} total tifs')
+                if self.meso_params['mesoscan']:
+                    if self.cropToHoloFOV:
+                        self.cropToHoloFOV_save_h5_meso(exp_name,tiff_folder)
+                    else:
+                        self.crop_and_save_h5_meso(exp_name,tiff_folder)
+                else:
+                    self.crop_and_save_h5(exp_name,tiff_folder)
         elapsed_time =time.time()-start_time_all
         print(f'All saved, took {elapsed_time:.2f} seconds')
 
@@ -193,15 +223,18 @@ class ImageProcessor:
     def crop_and_save_h5(self,exp_name,tiff_folder):
         data = [self.load_tif(str(mov)) for mov in self.movs]
         data = np.concatenate(data)
-        print(f'Concatenated data from all tiffs, total size: {data.shape}')
+
         for plane in range(self.planes):
-            t_slice = slice(plane, data.shape[0], self.planes)
-            plane_outdir = os.path.join(self.out_path, f'plane_{plane}')
-            self.outdirs.append(plane_outdir)
-            self.create_directory(plane_outdir)
-            outname = os.path.join(plane_outdir, f'{exp_name}_cropped_mov.h5')
+            #t_slice = slice(plane+self.channelOI, data.shape[0], self.planes*self.channels)
+            thisoutdir = os.path.join(self.out_path, f'plane_{plane}')
+            if (self.movIndex==0):
+                print(thisoutdir)
+                self.outdirs.append(thisoutdir)
+                self.create_directory(thisoutdir)
+            outname = os.path.join(thisoutdir, f'{self.movIndex}_{exp_name}_cropped_mov.h5')
             with h5py.File(outname, 'w') as hf:
-                cropped_mov_plane = data[t_slice, self.y_slice, self.x_slice]
+                cropped_mov_plane = np.r_[tuple(data[i+self.channelOI[0]:i + len(self.channelOI), self.y_slice, self.x_slice] for i in range(plane, data.shape[0], self.planes*self.channels))]
+#                 cropped_mov_plane = data[t_slice, self.y_slice, self.x_slice]
                 hf.create_dataset('data', data=cropped_mov_plane, dtype='uint16')
             del cropped_mov_plane
             gc.collect()
@@ -211,47 +244,93 @@ class ImageProcessor:
         data = [self.load_tif(str(mov)) for mov in self.movs]
         numtimepointstiffile = [d.shape[0] for d in data]
         data = np.concatenate(data)
-        print(f'concatenated data from all tiffs, total size: {data.shape}')
         ylen = np.shape(self.meso_params['lines'])[1]
         xlen = np.shape(self.meso_params['lines'])[0] * self.meso_params['dx'][1]
         datars = np.zeros((data.shape[0], ylen, xlen), dtype=np.int16)
         Nstripes = np.shape(self.meso_params['lines'])[0]
-
         for istrip in range(Nstripes):
-            t_strip = slice(istrip, data.shape[0], Nstripes)
-            datars=data[t_strip, self.meso_params['lines'][istrip], :].copy()
+#             t_strip = slice(istrip+self.channelOI,data.shape[0],Nstripes*self.channels)
+#             datars=data[t_strip, self.meso_params['lines'][istrip], :].copy()
+            datars = np.r_[tuple(data[i+self.channelOI[0]:i + len(self.channelOI), H_slice, :] for i in range(istrip, data.shape[0], Nstripes*self.channels))]
             print(f'data reshaped as {datars.shape}')
             thisoutdir = os.path.join(self.out_path, f'MROI_{istrip}')
-            self.outdirs.append(thisoutdir)
-            print(thisoutdir)
-            self.create_directory(thisoutdir)
-            outname = os.path.join(thisoutdir, f'{exp_name}_cropped_mov.h5')
+            if (self.movIndex==0):
+                print(f'saving .h5s in {thisoutdir}')
+                self.outdirs.append(thisoutdir)
+                self.create_directory(thisoutdir)
+
+            outname = os.path.join(thisoutdir, f'{self.movIndex}_{exp_name}_cropped_mov.h5')
             with h5py.File(outname, 'w') as hf:
                 cropped_mov_plane = datars[:, self.x_slice, self.y_slice]
-                print(f'saving cropped mov of shape {cropped_mov_plane.shape}')
+                print(f'saving cropped mov of shape {cropped_mov_plane.shape} \n in {outname}')
                 hf.create_dataset('data', data=cropped_mov_plane, dtype='uint16')
             del cropped_mov_plane
             gc.collect()
+
+     # 2 meso
+    def cropToHoloFOV_save_h5_meso(self,exp_name,tiff_folder):
+        data = [self.load_tif(str(mov)) for mov in self.movs]
+        numtimepointstiffile = [d.shape[0] for d in data]
+        data = np.concatenate(data)
+        ylen = np.shape(self.meso_params['lines'])[1]
+        xlen = np.shape(self.meso_params['lines'])[0] * self.meso_params['dx'][1]
+        datars = np.zeros((data.shape[0], ylen, xlen), dtype=np.int16)
+        Nstripes = np.shape(self.meso_params['lines'])[0]
+        Nstripes =self.meso_params['nrois']
+        rois = []
+        Nstripes = np.shape(self.meso_params['lines'])[0]
+        for istrip in range(Nstripes):
+            H_slice = self.meso_params['lines'][istrip]
+#             t_slice = slice(istrip+self.channelOI,data.shape[0],Nstripes*self.channels)
+#             datars=data[t_slice, H_slice, :].copy()
+            # flexible t slicing, takes N consecutive frames where N= len(channelOI) every M frames where M= Nstripes*self.channels
+            datars = np.r_[tuple(data[i+self.channelOI[0]:i + len(self.channelOI), H_slice, :] for i in range(istrip, data.shape[0], Nstripes*self.channels))]
+            rois.append(datars)
+        minlen= min([len(r) for r in rois])
+        #
+        rois = [r[:minlen,:,:] for r in rois]
+        dataStack = np.concatenate(rois,axis=2)
+
+        thisoutdir = os.path.join(self.out_path, f'HOLO_ROI_{self.x_bounds[0]}_{self.x_bounds[1]}_{ self.y_bounds[0]}_{ self.y_bounds[1]}')
+        if (self.movIndex==0):
+            print(f'found {len(rois)} mROIs of shape: {rois[0].shape}')
+            print(f'data reshaped as {dataStack.shape}')
+            print(thisoutdir)
+            self.outdirs.append(thisoutdir)
+            self.create_directory(thisoutdir)
+
+        outname = os.path.join(thisoutdir, f'{self.movIndex}_{exp_name}_cropped_mov.h5')
+        with h5py.File(outname, 'w') as hf:
+            cropped_mov_plane = dataStack[:, self.x_slice, self.y_slice]
+            #print(f'saving cropped mov of shape {cropped_mov_plane.shape},\n in {outname}')
+            hf.create_dataset('data', data=cropped_mov_plane, dtype='uint16')
+        del cropped_mov_plane
+        gc.collect()
 
     # 3 helper
     def load_tif(self, mov_path):
         with ScanImageTiffReader(mov_path) as reader:
             data = reader.data()
-        if self.singleChannel:
-            Tend = int( np.floor(data.shape[0] / (self.planes * self.channels)) * (self.planes * self.channels) )
-            t_slice = slice( self.channelOI, Tend, self.channels+ self.channelOI)
-            data = data[t_slice, :, :]
         return data
 
     # 4 parallel processing
     def run_parallel_processing(self, ops):
+        ops['fs'] = float(self.meso_params['fs'])/self.meso_params['nplanes']
+        ops['nchannels'] =len(self.channelOI)
+        print('changing some ops parameters using user info or tiff metadata \n fs: {}, nchannels: {} '.format(ops['fs'], ops['nchannels']))
+        if len(self.outdirs)>1:
+            ops['planes'] = 1 # means planes were already separated so each outdir has only one plane
+            print('running planes in parallel')
+        else:
+            print(f'running single suite2p')
+            ops['nplanes']= self.meso_params['nplanes'] # if all files are saved in one dir it might be multiplane data, so we take the info from the metadata of the original tif
+
         print('Starting parallel processing, check anaconda prompt for suite2p logs!')
         start_time_suite2p = time.time()
         db = []
         jobs = []
         for i in range(len(self.outdirs)):
             print(f'sending parallel processor number {i}')
-
             if i < (os.cpu_count() - 2):
                 this_out_name = self.outdirs[i]+'//'
                 this_db = {
