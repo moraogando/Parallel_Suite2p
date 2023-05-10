@@ -37,7 +37,7 @@ The following libraries are required (All of which are contained in the suite2p 
 - json
 - pathlib.Path
 - suite2p.run_s2p
-- ScanImageTiffReader.ScanImageTiffReader
+- ScanImageTiffReader
 - multiprocessing
 - matplotlib.pyplot as plt
 
