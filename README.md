@@ -7,7 +7,7 @@ Citation:
 
 doi: https://doi.org/10.1101/2023.03.02.530875
 
-The core repo for full mesoscale closed loop experiments exists at [Hyeyoung Shin's github](https://github.com/hs13/Meso_HScode)
+The core repo for full mesoscale closed-loop experiments exists at [Hyeyoung Shin's github](https://github.com/hs13/Meso_HScode)
 
 ImageProcessor Documentation
 This Python code defines a class called `ImageProcessor` that is used to process and analyze ScanImage TIFF images using the 
@@ -65,7 +65,7 @@ This method creates a new directory at the specified path if it doesn't already 
 
 ### `get_meta_info(self)`
 
-This method retrieves mesoscopic data and metadata from the first TIFF image in the specified folder list. 
+This method retrieves mesoscopic data and metadata from the first TIFF image in the specified folder list.
 
 ### `plotReconstruction(self)`
 
