@@ -249,22 +249,20 @@ class ImageProcessor:
         datars = np.zeros((data.shape[0], ylen, xlen), dtype=np.int16)
         Nstripes = np.shape(self.meso_params['lines'])[0]
         for istrip in range(Nstripes):
-#             t_strip = slice(istrip+self.channelOI,data.shape[0],Nstripes*self.channels)
-#             datars=data[t_strip, self.meso_params['lines'][istrip], :].copy()
+            H_slice = self.meso_params['lines'][istrip]
             datars = np.r_[tuple(data[i+self.channelOI[0]:i + len(self.channelOI), H_slice, :] for i in range(istrip, data.shape[0], Nstripes*self.channels))]
-            print(f'data reshaped as {datars.shape}')
-            thisoutdir = os.path.join(self.out_path, f'MROI_{istrip}')
+            cropped_mov_strip = datars[:, self.x_slice, self.y_slice]
             if (self.movIndex==0):
+                print(f'data reshaped as {cropped_mov_strip.shape}')
+                thisoutdir = os.path.join(self.out_path, f'MROI_{istrip}')
                 print(f'saving .h5s in {thisoutdir}')
                 self.outdirs.append(thisoutdir)
                 self.create_directory(thisoutdir)
-
-            outname = os.path.join(thisoutdir, f'{self.movIndex}_{exp_name}_cropped_mov.h5')
+            outname = os.path.join(self.outdirs[istrip], f'{self.movIndex}_{exp_name}_cropped_mov.h5')
             with h5py.File(outname, 'w') as hf:
-                cropped_mov_plane = datars[:, self.x_slice, self.y_slice]
-                print(f'saving cropped mov of shape {cropped_mov_plane.shape} \n in {outname}')
-                hf.create_dataset('data', data=cropped_mov_plane, dtype='uint16')
-            del cropped_mov_plane
+                # print(f'saving cropped mov of shape {cropped_mov_plane.shape} \n in {outname}')
+                hf.create_dataset('data', data=cropped_mov_strip, dtype='uint16')
+            del cropped_mov_strip
             gc.collect()
 
      # 2 meso
@@ -281,9 +279,6 @@ class ImageProcessor:
         Nstripes = np.shape(self.meso_params['lines'])[0]
         for istrip in range(Nstripes):
             H_slice = self.meso_params['lines'][istrip]
-#             t_slice = slice(istrip+self.channelOI,data.shape[0],Nstripes*self.channels)
-#             datars=data[t_slice, H_slice, :].copy()
-            # flexible t slicing, takes N consecutive frames where N= len(channelOI) every M frames where M= Nstripes*self.channels
             datars = np.r_[tuple(data[i+self.channelOI[0]:i + len(self.channelOI), H_slice, :] for i in range(istrip, data.shape[0], Nstripes*self.channels))]
             rois.append(datars)
         minlen= min([len(r) for r in rois])
