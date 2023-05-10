@@ -7,14 +7,14 @@ Citation:
 
 doi: https://doi.org/10.1101/2023.03.02.530875
 
-The core repo for full mesoscale closed loop experiments exists at: (https://github.com/hs13/Meso_HScode), by the great Hyeyoung Shin. 
+The core repo for full mesoscale closed loop experiments exists at [Hyeyoung Shin's github](https://github.com/hs13/Meso_HScode)
 
 ImageProcessor Documentation
 This Python code defines a class called `ImageProcessor` that is used to process and analyze ScanImage TIFF images using the 
 [suite2p](https://github.com/MouseLand/suite2p) library. The class is designed to handle both mesoscopic multiplane configurations. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing.
 ## Installation
 
-    1. Install suite2p following their instructions (https://github.com/MouseLand/suite2p).
+    1. Install suite2p following their instructions (https://github.com/MouseLand/suite2p)
     2. Clone or download current repo
    ### Usage
     3. Open anaconda prompt
@@ -22,7 +22,7 @@ This Python code defines a class called `ImageProcessor` that is used to process
     5. Activate the suite2p environment by typing "activate suite2p"
     6. Type "jupyter notebook" to lunch the jupyter server in your web-browser
     7. Go to the example notebook and run the cells
-    8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on [this] (https://github.com/hs13/Meso_HScode)
+    8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on (https://github.com/hs13/Meso_HScode)
  
 
 ## Dependencies
