@@ -1,19 +1,19 @@
 # Parallel_Suite2p
 """
-This code is part of a tool-kit generated in the Adesnik lab to probe inte-areal computations combining two-photon holography and meso-scale imaging
+This code is part of a tool-kit generated in the Adesnik lab for closed-loop experiments combining two-photon holography and two-photon imaging
 
 Citation:
 [Probing inter-areal computations with a cellular resolution two-photon holographic mesoscope](https://www.biorxiv.org/content/10.1101/2023.03.02.530875v2)
 
 doi: https://doi.org/10.1101/2023.03.02.530875
 
-The core repo exists at: (https://github.com/hs13/Meso_HScode), by the great Hyeyoung Shin
+The core repo for full mesoscale closed loop experiments exists at: (https://github.com/hs13/Meso_HScode), by the great Hyeyoung Shin. 
 
 # ImageProcessor Documentation
-This Python code defines a class called `ImageProcessor` that is used to process and analyze TIFF images. The class is designed to handle mesoscopic data and multiplane images. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing, and reconstruct images.
+This Python code defines a class called `ImageProcessor` that is used to process and analyze ScanImage TIFF images using the [suite2p] (https://github.com/MouseLand/suite2p) library. The class is designed to handle both mesoscopic multiplane configurations. The ImageProcessor class provides functionalities to extract ROI dimensions, load and save image data, perform parallel processing.
 ## Installation
 
-    1. Install suite2p following their instructions [https://github.com/MouseLand/suite2p].
+    1. Install suite2p following their [instructions] (https://github.com/MouseLand/suite2p).
     2. Clone or download current repo
    ### Usage
     3. Open anaconda prompt
@@ -21,9 +21,8 @@ This Python code defines a class called `ImageProcessor` that is used to process
     5. Activate the suite2p environment by typing "activate suite2p"
     6. Type "jupyter notebook" to lunch the jupyter server in your web-browser
     7. Go to the example notebook and run the cells
-    8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on this 
-    
-    
+    8. After pre-processing your data, you can follow the rest of the steps for closed-loop reactivation of functionally interesting neurons on [this] (https://github.com/hs13/Meso_HScode)
+ 
 
 ## Dependencies
 
@@ -50,13 +49,12 @@ The `ImageProcessor` class has the following methods:
 The constructor initializes the ImageProcessor object with the given parameters.
 
 - `tiff_folder_list`: A list of paths to TIFF folders.
-- `exp_list`: A list of experiment names corresponding to the TIFF folders. If not provided, the names will be derived from the folder paths.
+- `exp_list`: A list of experiment names corresponding to the TIFF folders. If not provided, the names will be derived from the tiff folder paths.
 - `x_bounds`: A list containing the lower and upper bounds of the x-axis cropping window in pixels (default: [0, 512]).
 - `y_bounds`: A list containing the lower and upper bounds of the y-axis cropping window in pixels (default: [0, 512]).
 - `out_path`: The output path where the processed data will be saved (default: 'out_path').
 - `channels`: The number of channels in the input images (default: 1).
-- `channelOI`: The channel of interest to be processed (default: 0). 
-- `singleChannel`: A flag to indicate if the h5 files should contain only the channel of interest (default: 1).
+- `channelOI`: list of channels to be processed (default: [0]). 
 
 ### `create_directory(self, path)`
 
