@@ -1,6 +1,6 @@
 # Parallel_Suite2p
 """
-Analysis pipeline for closed-loop experiments combining two-photon holography and two-photon imaging
+Analysis pipeline for closed-loop experiments combining two-photon holographic optogenetics and two-photon Calcium Imaging.
 
 
 Usage will depend on the specific recording configuration. For mesoscopic closed-loop experiments, see: [Hyeyoung Shin's github](https://github.com/hs13/Meso_HScode)
