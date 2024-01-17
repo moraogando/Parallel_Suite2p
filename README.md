@@ -3,7 +3,7 @@
 Analysis pipeline for closed-loop experiments combining two-photon holographic optogenetics and two-photon Calcium Imaging.
 
 
-Usage will depend on the specific recording configuration. For mesoscopic closed-loop experiments, see: [Hyeyoung Shin's github]([https://github.com/hs13/MesoHolo_OnlineAnalysis/tree/main])
+Usage will depend on the specific recording configuration. For mesoscopic closed-loop experiments, see: [Hyeyoung Shin's github](https://github.com/hs13/MesoHolo_OnlineAnalysis/tree/main)
 
 [Probing inter-areal computations with a cellular resolution two-photon holographic mesoscope](https://www.biorxiv.org/content/10.1101/2023.03.02.530875v2) doi: https://doi.org/10.1101/2023.03.02.530875
 
